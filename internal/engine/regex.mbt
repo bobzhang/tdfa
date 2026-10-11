@@ -18,9 +18,10 @@ const CURRENT : Int = -2
 
 ///|
 /// Default budget for the lazy DFA cache, in machine words (table entries
-/// plus state descriptions). When building a state would exceed it, the cache
-/// is dropped and rebuilt on demand, so memory stays bounded for any pattern
-/// and input.
+/// plus state descriptions). When adding a state would exceed it, the cache
+/// is dropped and rebuilt on demand, so memory does not grow with the input.
+/// The state being added is always kept, even when it is larger than the
+/// budget on its own.
 const MAX_CACHE_WORDS : Int = 1 << 22
 
 ///|
@@ -114,8 +115,9 @@ pub fn Regex::group_names(self : Regex) -> ReadOnlyArray[String?] {
 /// of input, a lazy "any character" loop is prepended, exactly like the
 /// compiler prepares an unanchored `lexmatch` case.
 ///
-/// `max_cache_words` bounds the memory of the lazily built DFA; when a new
-/// state would exceed it the cache is dropped and rebuilt on demand.
+/// `max_cache_words` is the budget of the lazily built DFA cache; when a new
+/// state would exceed it the cache is dropped and rebuilt on demand. One
+/// state is always kept, whatever its size.
 pub fn compile(
   profile~ : Profile,
   ast : Pattern,

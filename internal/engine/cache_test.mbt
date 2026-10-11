@@ -58,3 +58,31 @@ test "flushing the lazy DFA cache does not change results" {
   }
   assert_true(matches > 500)
 }
+
+///|
+/// One state can be larger than the whole budget: here every alternative has
+/// its own group and all of them stay alive after the first `a`. The state
+/// is kept anyway and matching stays correct. Found in review.
+test "a state larger than the cache budget still works" {
+  let branches = Array::makei(300, _ => {
+    @engine.capture(
+      @engine.seq([
+        @engine.quantifier(chars('a', 'a'), { min: 0, max: None, mode: Greedy, }),
+        chars('b', 'b'),
+      ]),
+    )
+  })
+  let pattern = @engine.seq([
+    @engine.start_of_input,
+    @engine.alt(ReadOnlyArray::from_array(branches)),
+  ])
+  // One state needs about 300 rows of 602 registers, far above 1,000 words.
+  let re = @engine.compile(profile~, pattern, max_cache_words=1000)
+  for input in ["aaab", "b", "aaaaaaaab"] {
+    guard re.execute(input, 0) is Some(m) else { fail("expected a match") }
+    @test.assert_eq(m.group(0), Some((0, input.length())))
+    @test.assert_eq(m.group(1), Some((0, input.length())))
+    @test.assert_eq(m.group(2), None)
+  }
+  assert_true(re.execute("aaac", 0) is None)
+}

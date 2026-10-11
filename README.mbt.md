@@ -66,7 +66,8 @@ this package are written as strings.
 - **Match candidate.** The best match so far is part of the DFA state instead
   of being saved aside, so finding a match costs nothing extra per step.
 - **No minimisation**, and a memory budget instead: when the cache of states
-  would exceed it, the cache is dropped and rebuilt on demand.
+  would exceed it, the cache is dropped and rebuilt on demand (see Memory
+  below for what the budget does not cover).
 - **Leftmost-first only.** There is no `longest` strategy.
 
 ## Compared with `@string.Regex`
@@ -106,6 +107,12 @@ this engine keeps the last iteration that did something:
 
 How this was checked:
 
+- `internal/engine/oracle_wbtest.mbt` compares the lazy DFA with a Pike-style
+  reference matcher over the same NFA, which is a valid oracle for nullable
+  repetitions too: 48,000 comparisons per test run on each backend.
+- `lexmatch_spec_test.mbt` holds the whole-match results of compile-time
+  `lexmatch` for 520 patterns on 24 inputs, mostly nullable repetitions. All
+  12,480 agree.
 - `fuzz/main.mbt` compares the two engines on random patterns and inputs,
   including `last_index` and every capture group. Without repetition of a
   nullable body, 1,200,000 comparisons show no difference. With it, about
@@ -155,11 +162,24 @@ wasm-gc, and 251 KB against 303 KB on JS (release builds).
 
 ### Memory
 
-The lazy DFA is cached up to a budget of about 4 million machine words; past
-that the cache is dropped and rebuilt as needed, so memory stays bounded for
-any pattern and input. Patterns that keep very many match attempts alive at
-once, such as a long periodic literal, run in time proportional to input
-length times the number of live attempts, as in any automaton-based engine.
+The lazy DFA is a cache with a budget of about 4 million machine words. When
+adding a state would exceed it, the cache is dropped and rebuilt as needed,
+so memory does not grow with the length of the input.
+
+The budget does not limit the size of one state. The state being built is
+always kept, and it holds one row of `2 x groups` registers per live match
+attempt, so a pattern with very many capture groups and very many
+simultaneous attempts can exceed the budget with a single state (1,500
+alternatives with a group each, all alive at once, take 4.5 million words).
+Memory is therefore bounded by the budget plus a term that depends only on
+the pattern.
+
+Patterns that keep very many match attempts alive at once, such as a long
+periodic literal or nested counted repetitions like `(?:a{256}){256}`, run in
+time proportional to input length times the number of live attempts, as in
+any automaton-based engine. On `(?:(?:a){256}){256}` against 70,000 `a`,
+neither engine finished within a minute; this one had used 0.14 GB by then
+and `@string.Regex` 75 GB.
 
 ## Layout
 
@@ -170,6 +190,8 @@ length times the number of live attempts, as in any automaton-based engine.
   `moonbitlang/core`, where they are internal packages.
 - `internal/fuzzgen`, `fuzz`: random pattern generator and differential
   fuzzer against core.
+- `scripts/generate_lexmatch_cases.py`: regenerates `lexmatch_spec_test.mbt`
+  from the installed toolchain.
 - `benchmarks`: paired benchmarks against `@string.Regex`.
 
 ## Commands
