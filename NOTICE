@@ -1,0 +1,13 @@
+bobzhang/tdfa
+
+This product includes software developed at
+International Digital Economy Academy (https://www.idea.edu.cn/).
+
+The following parts are copied or adapted from moonbitlang/core
+(https://github.com/moonbitlang/core), licensed under the Apache License,
+Version 2.0:
+
+- internal/regex_parser, internal/ast, internal/shared_types,
+  internal/rechar_set, internal/symbol_map
+- regex.mbt, regex_methods.mbt, regex_pattern.mbt, regex_profile.mbt,
+  regex_utf16.mbt and the tests ported with them

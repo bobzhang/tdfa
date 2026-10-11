@@ -1,0 +1,22 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "bobzhang/tdfa/internal/fuzzgen"
+
+// Values
+pub fn input(Rng) -> String
+
+pub fn last_index(Rng, String) -> Int
+
+pub fn pattern(Rng, Int, strict~ : Bool) -> (String, Bool)
+
+// Errors
+
+// Types and methods
+pub struct Rng {
+  mut state : UInt
+}
+pub fn Rng::Rng(UInt) -> Self
+pub fn Rng::next(Self, Int) -> Int
+
+// Type aliases
+
+// Traits

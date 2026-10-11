@@ -1,0 +1,8 @@
+import {
+  "moonbitlang/core/builtin",
+  "moonbitlang/core/string",
+  "bobzhang/tdfa",
+  "bobzhang/tdfa/internal/fuzzgen",
+}
+
+pkgtype(kind: "executable")

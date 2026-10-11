@@ -1,0 +1,12 @@
+import {
+  "moonbitlang/core/builtin",
+  "moonbitlang/core/hashmap",
+  "moonbitlang/core/debug",
+  "bobzhang/tdfa/internal/shared_types",
+  "bobzhang/tdfa/internal/ast",
+  "bobzhang/tdfa/internal/symbol_map",
+}
+
+import {
+  "moonbitlang/core/test",
+} for "test"

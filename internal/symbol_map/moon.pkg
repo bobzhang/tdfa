@@ -1,0 +1,9 @@
+import {
+  "moonbitlang/core/builtin",
+  "moonbitlang/core/sorted_set",
+  "bobzhang/tdfa/internal/shared_types",
+}
+
+import {
+  "bobzhang/tdfa/internal/rechar_set",
+} for "test"
