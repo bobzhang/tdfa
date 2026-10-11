@@ -80,6 +80,24 @@ fn Regex::start_base(self : Regex, ctx : Int) -> Int {
 }
 
 ///|
+/// Largest generation stamp handed out before the marks are cleared.
+const EPOCH_LIMIT : Int = 0x7fffffff
+
+///|
+/// A fresh generation stamp for the `visited` and `targeted` marks of one
+/// `build`. Before the counter can wrap onto a stamp that is still stored in
+/// the marks (including the initial `0`), the marks are cleared.
+fn Regex::next_epoch(self : Regex) -> Int {
+  if self.epoch >= EPOCH_LIMIT {
+    self.visited.fill(0)
+    self.targeted.fill(0)
+    self.epoch = 0
+  }
+  self.epoch += 1
+  self.epoch
+}
+
+///|
 /// Build the transition out of the state at row `base` on `column` (a symbol,
 /// or `nsym` for end of input). Returns the next row base, `DEAD`, or an
 /// encoded terminal state, and leaves the register written by the transition
@@ -111,8 +129,7 @@ fn Regex::build(self : Regex, base : Int, column : Int) -> Int {
   let kernel = self.kernels[base / width]
   let cat = self.col_cat[column]
   let at_end = column == self.nsym
-  self.epoch += 1
-  let epoch = self.epoch
+  let epoch = self.next_epoch()
   let visited = self.visited
   let targeted = self.targeted
   let out_nodes : Array[Int] = []
