@@ -9,6 +9,13 @@ while matching.
 It exists so that a regex matched at run time gives the same answer as the
 same regex compiled into a `lexmatch`.
 
+> **Status: merged into `moonbitlang/core`, and deprecated here.** Since
+> [moonbitlang/core#4371](https://github.com/moonbitlang/core/pull/4371)
+> (merged 2026-10-11), `@string.Regex` in core runs on this engine. Use
+> `@string.Regex` from a core that includes that change. This module stays
+> as the place the engine was developed; 0.1.3 is the last release and
+> matches what was merged.
+
 ```mbt check
 ///|
 test "search with capture groups" {
@@ -62,17 +69,23 @@ this package are written as strings.
   which keeps the generated code small but needs register copies. Here a
   thread keeps its registers while it lives. All tags set by one transition
   have the same value, so a transition writes at most one register and never
-  copies.
+  copies. Two states that only differ in which registers they name are
+  therefore two states, where the compiler has one. While the cache has room
+  both are kept; when it is full, the search enters the one it has and moves
+  the register values there, and that transition is kept with its moves.
 - **Match candidate.** The best match so far is part of the DFA state instead
   of being saved aside, so finding a match costs nothing extra per step.
-- **No minimisation**, and a memory budget instead: when the cache of states
-  would exceed it, the cache is dropped and rebuilt on demand (see Memory
-  below for what the budget does not cover).
+- **No minimisation**, and a memory budget instead: when a state does not
+  fit and no cached state can stand in for it, the cache is dropped and
+  rebuilt on demand (see Memory below).
 - **Leftmost-first only.** There is no `longest` strategy.
 
 ## Compared with `@string.Regex`
 
-Measured against `moonbitlang/core` 0.10.15 on 2026-10-11.
+Measured against `moonbitlang/core` 0.10.15 on 2026-10-11, that is, against
+the engine core used before it adopted this one. Version 0.1.2 of this
+package was measured; the performance numbers below were not taken again for
+0.1.3.
 
 ### Behaviour
 
@@ -162,24 +175,31 @@ wasm-gc, and 251 KB against 303 KB on JS (release builds).
 
 ### Memory
 
-The lazy DFA is a cache with a budget of about 4 million machine words. When
-adding a state would exceed it, the cache is dropped and rebuilt as needed,
-so memory does not grow with the length of the input.
+The lazy DFA is a cache with a budget of 16 million machine words (64 MB) of
+table and state data, plus up to as much again for register moves. The
+engine core used before never dropped its cache, so its memory grew with the
+number of DFA states.
 
-The budget does not limit the size of one state. The state being built is
-always kept, and it holds one row of `2 x groups` registers per live match
-attempt, so a pattern with very many capture groups and very many
-simultaneous attempts can exceed the budget with a single state (1,500
-alternatives with a group each, all alive at once, take 4.5 million words).
-Memory is therefore bounded by the budget plus a term that depends only on
-the pattern.
+- A state stores, per live match attempt, only the tags set on that
+  attempt's path, so a state is as large as its attempts need and not as wide
+  as the pattern. (Up to 0.1.2 every attempt had a row as wide as the whole
+  pattern; 800 alternatives with two groups each made one state larger than
+  the budget and every step rebuilt it.)
+- When the cache is full and holds a state that only differs from the new
+  one in the names of its registers, the search enters that state and moves
+  the register values. The cache is only dropped for a state it has no such
+  copy of.
 
-Patterns that keep very many match attempts alive at once, such as a long
-periodic literal or nested counted repetitions like `(?:a{256}){256}`, run in
-time proportional to input length times the number of live attempts, as in
-any automaton-based engine. On `(?:(?:a){256}){256}` against 70,000 `a`,
-neither engine finished within a minute; this one had used 0.14 GB by then
-and `@string.Regex` 75 GB.
+What does not fit the budget is rebuilt, which is slower than a cached step.
+On `(?:a{241}){12}b` against a run of `a`, 2,892 match attempts are alive at
+once and the budget leaves room for one copy of the steady state, so every
+character moves 2,892 registers: 4 µs per character, where the previous
+engine of core took 1.4 ns per character and several GB. A pattern that
+needs more states than the budget holds before it reaches a steady state,
+such as `(?:a{250}){20}b`, rebuilds them on every search. A long run of
+capture groups makes every attempt carry every group it has passed, and
+those states are 1.6 to 2.6 times slower to build than in the previous
+engine.
 
 ## Layout
 

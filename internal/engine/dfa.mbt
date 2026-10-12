@@ -102,7 +102,11 @@ fn Regex::insert(self : Regex, key : FixedArray[Int], threads : Int) -> Int {
   self.state_ids.set(key, state)
   self.cache_words += self.cost(key)
   if self.shapes is Some(shapes) {
-    add_shape(shapes, shape_hash(key, threads, Ranks::new(self.regs.length())), state)
+    add_shape(
+      shapes,
+      shape_hash(key, threads, Ranks::new(self.regs.length())),
+      state,
+    )
   }
   state
 }
@@ -471,7 +475,7 @@ fn Regex::build(self : Regex, base : Int, column : Int, pos : Int) -> Int {
           self.move_words += words
           self.trans[base + column] = moving(self.moves.length())
           self.slots[base + column] = slot
-          self.moves.push({ pairs, target: entry })
+          self.moves.push({ pairs, target: entry, })
         }
         entry
       } else {
