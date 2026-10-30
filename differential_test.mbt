@@ -1,6 +1,6 @@
 ///|
 /// Every capture group of a match, or `"no match"`.
-fn[M] render(m : M?, group : (M, Int) -> StringView?) -> String {
+fn[M] render(m : M?, group : (M, Int32) -> StringView?) -> String {
   guard m is Some(m) else { "no match" }
   let sb = StringBuilder()
   for i in 0..<12 {

@@ -1,7 +1,7 @@
 ///|
 /// Capture offsets of a successful match: `[start0, end0, start1, end1, ...]`
 /// relative to the searched view, `-1` for groups that did not participate.
-struct MatchResult(Array[Int]) derive(@debug.Debug)
+struct MatchResult(Array[Int32]) derive(@debug.Debug)
 
 ///|
 #deprecated("Use `Debug::to_repr` instead", skip_current_package=true)
@@ -9,7 +9,7 @@ struct MatchResult(Array[Int]) derive(@debug.Debug)
 pub extend MatchResult with @debug.Debug::{to_repr}
 
 ///|
-pub fn MatchResult::group(self : MatchResult, index : Int) -> (Int, Int)? {
+pub fn MatchResult::group(self : MatchResult, index : Int32) -> (Int32, Int32)? {
   // Validate before multiplying so large indices cannot wrap into a group.
   guard index >= 0 && index < self.0.length() / 2 else { None }
   let start = self.0[index * 2]
@@ -24,7 +24,7 @@ pub fn MatchResult::group(self : MatchResult, index : Int) -> (Int, Int)? {
 pub fn Regex::execute(
   self : Regex,
   input : StringView,
-  last_index : Int,
+  last_index : Int32,
 ) -> MatchResult? {
   guard last_index >= 0 && last_index <= input.length() else { panic() }
   let table = self.table

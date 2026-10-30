@@ -4,18 +4,18 @@ package "bobzhang/tdfa/internal/fuzzgen"
 // Values
 pub fn input(Rng) -> String
 
-pub fn last_index(Rng, String) -> Int
+pub fn last_index(Rng, String) -> Int32
 
-pub fn pattern(Rng, Int, strict~ : Bool) -> (String, Bool)
+pub fn pattern(Rng, Int32, strict~ : Bool) -> (String, Bool)
 
 // Errors
 
 // Types and methods
 pub struct Rng {
-  mut state : UInt
+  mut state : UInt32
 }
-pub fn Rng::Rng(UInt) -> Self
-pub fn Rng::next(Self, Int) -> Int
+pub fn Rng::Rng(UInt32) -> Self
+pub fn Rng::next(Self, Int32) -> Int32
 
 // Type aliases
 

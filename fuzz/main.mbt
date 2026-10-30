@@ -18,7 +18,7 @@ fn show(m : Array[StringView?]) -> String {
 }
 
 ///|
-fn run(strict~ : Bool, rounds : Int) -> Unit {
+fn run(strict~ : Bool, rounds : Int32) -> Unit {
   let rng = @fuzzgen.Rng(12345U)
   let mut patterns = 0
   let mut checks = 0

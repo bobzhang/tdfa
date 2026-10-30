@@ -15,7 +15,7 @@ let phone_lines : Array[String] = [
 ]
 
 ///|
-fn padded3(i : Int) -> String {
+fn padded3(i : Int32) -> String {
   "\{i}".pad_start(3, '0')
 }
 

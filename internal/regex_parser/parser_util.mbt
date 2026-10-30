@@ -13,7 +13,7 @@
 // limitations under the License.
 
 ///|
-fn hex2i(hex : StringView) -> Int {
+fn hex2i(hex : StringView) -> Int32 {
   for c in hex; value = 0 {
     let value = value * 16
     match c {
