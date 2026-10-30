@@ -1,17 +1,17 @@
 ///|
 /// A small deterministic generator, so that failures can be replayed.
 pub struct Rng {
-  mut state : UInt
+  mut state : UInt32
 }
 
 ///|
-pub fn Rng::Rng(seed : UInt) -> Rng {
+pub fn Rng::Rng(seed : UInt32) -> Rng {
   { state: seed, }
 }
 
 ///|
 /// A pseudo-random integer in `0..<bound`.
-pub fn Rng::next(self : Rng, bound : Int) -> Int {
+pub fn Rng::next(self : Rng, bound : Int32) -> Int32 {
   self.state = self.state * 1664525U + 1013904223U
   ((self.state >> 8).reinterpret_as_int() & 0x7fffff) % bound
 }
@@ -31,7 +31,7 @@ let quantifiers : Array[String] = [
 /// Generate a regex pattern. Returns the pattern and whether it can match
 /// the empty string. With `strict`, no quantifier is applied to a body that
 /// can match the empty string.
-pub fn pattern(rng : Rng, depth : Int, strict~ : Bool) -> (String, Bool) {
+pub fn pattern(rng : Rng, depth : Int32, strict~ : Bool) -> (String, Bool) {
   fn atom() -> (String, Bool) {
     let a = atoms[rng.next(atoms.length())]
     (a, a is ("\\b" | "\\B" | "^" | "$"))
@@ -92,7 +92,7 @@ pub fn input(rng : Rng) -> String {
 ///|
 /// Pick a start index for `text` that is a character boundary, `0` most of
 /// the time.
-pub fn last_index(rng : Rng, text : String) -> Int {
+pub fn last_index(rng : Rng, text : String) -> Int32 {
   guard rng.next(4) == 0 && text.length() > 0 else { 0 }
   let i = rng.next(text.length() + 1)
   if i > 0 && i < text.length() && text.code_unit_at(i).is_trailing_surrogate() {
