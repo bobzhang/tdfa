@@ -52,7 +52,8 @@ pub let start_of_word : @ast.Pattern
 // Errors
 
 // Types and methods
-type MatchResult derive(@debug.Debug)
+#derive(@debug.Debug)
+type MatchResult
 pub fn MatchResult::group(Self, Int32) -> (Int32, Int32)?
 
 type Regex

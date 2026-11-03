@@ -14,8 +14,9 @@
 
 ///|
 /// Type `Preference` used by this package APIs.
+#derive(Eq, Hash, @debug.Debug)
 pub(all) enum Preference {
   Shortest
   Longest
   First
-} derive(Eq, Hash, @debug.Debug)
+}
