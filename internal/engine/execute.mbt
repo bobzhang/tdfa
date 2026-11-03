@@ -1,7 +1,8 @@
 ///|
 /// Capture offsets of a successful match: `[start0, end0, start1, end1, ...]`
 /// relative to the searched view, `-1` for groups that did not participate.
-struct MatchResult(Array[Int32]) derive(@debug.Debug)
+#derive(@debug.Debug)
+struct MatchResult(Array[Int32])
 
 ///|
 #deprecated("Use `Debug::to_repr` instead", skip_current_package=true)
